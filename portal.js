@@ -13,8 +13,17 @@ const header=()=>`<div class="reading-progress" id="reading-progress"></div><div
 const footer=()=>`<footer><a class="brand footer-brand" href="index.html"><span>REVISTA DE</span><strong>GASTRONOMIA</strong></a><p>Comer é cultura. Cozinhar é memória.</p><div><a href="sobre.html">Sobre</a><a href="contato.html">Contato</a><a href="privacidade.html">Privacidade</a><a href="anuncie.html">Anuncie</a></div><small>© 2026 Revista de Gastronomia.</small></footer>`;
 const ad=(type="leaderboard")=>`<aside class="ad-slot ${type}"><span>PUBLICIDADE</span><div>ESPAÇO PUBLICITÁRIO</div></aside>`;
 const card=a=>`<a class="listing-card" href="materia.html?id=${a.id}">${a.image_url?`<img src="${a.image_url}" alt="">`:""}<div><span>${a.category||"Gastronomia"}</span><h2>${a.title}</h2><p>${a.description||""}</p></div></a>`;
-async function articles(){try{const r=await fetch(`${API}&_=${Date.now()}`,{cache:"no-store"});if(!r.ok)throw 0;const data=await r.json();return data.length?data:fallback}catch{return fallback}}
-async function render(){const app=document.querySelector("#portal-app"),page=document.body.dataset.page,data=await articles(),p=new URLSearchParams(location.search);let body="";
+async function articles(){
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),5000);
+ try{
+  const r=await fetch(`${API}&_=${Date.now()}`,{cache:"no-store",signal:controller.signal});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const data=await r.json();
+  return data.length?data:fallback;
+ }catch{return fallback}finally{clearTimeout(timeout)}
+}
+function render(data=fallback){const app=document.querySelector("#portal-app"),page=document.body.dataset.page,p=new URLSearchParams(location.search);let body="";
 if(page==="materia"){const a=data.find(x=>x.id===Number(p.get("id")))||data[0];body=`${ad()}<main class="article-layout"><article class="article-page"><nav class="breadcrumb"><a href="index.html">Início</a> / <a href="editoria.html?categoria=${a.category}">${a.category}</a></nav><span class="eyebrow dark">${a.category}</span><h1>${a.title}</h1><p class="article-deck">${a.description||""}</p><div class="byline">Por ${a.author||"Redação"} · Hoje</div>${a.image_url?`<img class="article-cover" src="${a.image_url}" alt="">`:""}<div class="article-body">${(a.content||a.description||"").split(/\n+/).map(x=>`<p>${x}</p>`).join("")}</div>${ad("in-article")}<div class="share-row"><b>Compartilhe</b><button data-share="whatsapp">WhatsApp</button><button data-share="facebook">Facebook</button><button data-share="copy">Copiar link</button></div></article><aside class="article-rail">${ad("rectangle")}<h2>Mais lidas</h2>${data.slice(0,5).map((x,i)=>`<a class="rail-item" href="materia.html?id=${x.id}"><span>0${i+1}</span>${x.title}</a>`).join("")}</aside></main>`;}
 else if(page==="editoria"){const cat=p.get("categoria")||"novidades",shown=data.filter(x=>x.category===cat);body=`${ad()}<main class="content-page"><div class="section-head"><div><span>EDITORIA</span><h1>${cat.replaceAll("-"," ")}</h1></div></div><div class="listing-grid">${(shown.length?shown:data).map(card).join("")}</div>${ad()}</main>`;}
 else if(page==="busca"){body=`<main class="content-page"><div class="section-head"><div><span>ENCONTRE UMA HISTÓRIA</span><h1>Busca</h1></div></div><input class="portal-search" id="search" placeholder="Busque receitas, restaurantes e histórias"><div class="listing-grid" id="results">${data.map(card).join("")}</div></main>`;setTimeout(()=>document.querySelector("#search").addEventListener("input",e=>{const q=e.target.value.toLowerCase();document.querySelector("#results").innerHTML=data.filter(x=>(x.title+" "+x.description).toLowerCase().includes(q)).map(card).join("")}),0);}
@@ -25,9 +34,10 @@ function initUI(){
  const open=()=>{drawer.classList.add("open");backdrop.classList.add("open");drawer.setAttribute("aria-hidden","false");toggle.setAttribute("aria-expanded","true");document.body.classList.add("menu-open")};
  const close=()=>{drawer.classList.remove("open");backdrop.classList.remove("open");drawer.setAttribute("aria-hidden","true");toggle.setAttribute("aria-expanded","false");document.body.classList.remove("menu-open")};
  toggle?.addEventListener("click",open);document.querySelector(".menu-close")?.addEventListener("click",close);backdrop?.addEventListener("click",close);document.addEventListener("keydown",e=>e.key==="Escape"&&close());
- const top=document.createElement("button");top.className="back-to-top";top.setAttribute("aria-label","Voltar ao topo");top.innerHTML=icon("arrow");top.onclick=()=>scrollTo({top:0,behavior:"smooth"});document.body.append(top);
+ const top=document.createElement("button");top.className="back-to-top";top.setAttribute("aria-label","Voltar ao topo");top.innerHTML=icon("arrow");top.onclick=()=>scrollTo({top:0,behavior:"smooth"});document.querySelector(".back-to-top")?.remove();document.body.append(top);
  addEventListener("scroll",()=>{top.classList.toggle("visible",scrollY>500);const max=document.documentElement.scrollHeight-innerHeight;const bar=document.querySelector("#reading-progress");if(bar)bar.style.width=(max?scrollY/max*100:0)+"%"},{passive:true});
  document.querySelectorAll("[data-share]").forEach(button=>button.addEventListener("click",async()=>{const type=button.dataset.share,url=encodeURIComponent(location.href),title=encodeURIComponent(document.title);if(type==="whatsapp")open("https://wa.me/?text="+title+"%20"+url,"_blank");if(type==="facebook")open("https://www.facebook.com/sharer/sharer.php?u="+url,"_blank");if(type==="copy"){await navigator.clipboard.writeText(location.href);button.textContent="Link copiado ✓";}}));
  document.querySelectorAll("img").forEach(img=>{img.loading="lazy";img.decoding="async"});
 }
-render();
+render(fallback);
+articles().then(data=>{if(JSON.stringify(data)!==JSON.stringify(fallback))render(data)});
