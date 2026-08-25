@@ -30,14 +30,29 @@ async function loadPublishedArticles() {
 }
 
 function enhanceNavigation() {
+  const header = document.querySelector("header");
+  header?.classList.add("portal-header");
+  const oldMenu = document.querySelector(".mobile-menu");
+  if (oldMenu) {
+    oldMenu.outerHTML = `<button class="icon-button menu-toggle" aria-label="Abrir menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>`;
+    header.insertAdjacentHTML("beforeend", `<div class="mobile-drawer" aria-hidden="true"><div class="drawer-head"><b>Menu</b><button class="icon-button menu-close" aria-label="Fechar menu"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><nav><a href="editoria.html?categoria=receitas">Receitas</a><a href="editoria.html?categoria=restaurantes">Restaurantes</a><a href="editoria.html?categoria=tendencias">Tendências</a><a href="editoria.html?categoria=viagens">Viagens</a><a href="editoria.html?categoria=bebidas">Bebidas</a><a href="editoria.html?categoria=curiosidades">Curiosidades</a><a href="busca.html">Buscar</a><a href="sobre.html">Sobre</a><a href="anuncie.html">Anuncie</a></nav></div><div class="drawer-backdrop"></div>`);
+    const drawer = header.querySelector(".mobile-drawer");
+    const backdrop = header.querySelector(".drawer-backdrop");
+    const toggle = header.querySelector(".menu-toggle");
+    const openMenu = () => { drawer.classList.add("open"); backdrop.classList.add("open"); drawer.setAttribute("aria-hidden","false"); toggle.setAttribute("aria-expanded","true"); document.body.classList.add("menu-open"); };
+    const closeMenu = () => { drawer.classList.remove("open"); backdrop.classList.remove("open"); drawer.setAttribute("aria-hidden","true"); toggle.setAttribute("aria-expanded","false"); document.body.classList.remove("menu-open"); };
+    toggle.addEventListener("click", openMenu);
+    header.querySelector(".menu-close").addEventListener("click", closeMenu);
+    backdrop.addEventListener("click", closeMenu);
+    document.addEventListener("keydown", event => { if (event.key === "Escape") closeMenu(); });
+  }
   const search = document.querySelector(".search");
   if (search) {
+    search.classList.add("icon-button");
     search.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>';
     search.addEventListener("click", () => location.href = "busca.html");
   }
-  const menu = document.querySelector(".mobile-menu");
-  document.addEventListener("keydown", (event) => { if (event.key === "Escape" && menu) menu.open = false; });
-  document.querySelectorAll("img").forEach((image) => { image.loading = "lazy"; image.decoding = "async"; });
+  document.querySelectorAll("img").forEach(image => { image.loading = "lazy"; image.decoding = "async"; });
   const top = document.createElement("button");
   top.className = "back-to-top";
   top.setAttribute("aria-label", "Voltar ao topo");
