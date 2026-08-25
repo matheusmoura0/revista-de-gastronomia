@@ -1,18 +1,12 @@
 # Revista de Gastronomia
 
-Portal editorial brasileiro de gastronomia com receitas, restaurantes, tendências, viagens, bebidas e curiosidades.
+Portal editorial responsivo de gastronomia desenvolvido em HTML, CSS e JavaScript puros.
 
-## Desenvolvimento
+## Executar localmente
 
-```bash
-npm install
-npm run dev
-```
+Abra o arquivo `index.html` no navegador ou use um servidor estático.
 
-## Build
+## Deploy no Vercel
 
-```bash
-npm run build
-```
+Importe este repositório sem configurar comando de build. O Vercel publicará os arquivos estáticos diretamente.
 
-Projeto responsivo desenvolvido com React, TypeScript e Vinext.
