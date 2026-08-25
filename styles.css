@@ -27,3 +27,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{o
 @media(max-width:850px){.portal-header .desktop-nav{display:none}.portal-header .header-main{min-height:82px;padding:8px 14px}.portal-header .brand strong{font-size:clamp(25px,7vw,34px)}.portal-header .brand span{font-size:7px}.article-layout{gap:38px}.article-rail{padding-top:25px;border-top:1px solid var(--line)}}
 @media(max-width:540px){.topline{height:27px}.portal-header .brand strong{font-size:25px}.portal-header .icon-button{width:38px;height:38px}.article-deck{font-size:20px}.article-body{font-size:18px;line-height:1.65}.ad-slot.leaderboard div{height:90px}.back-to-top{right:14px;bottom:14px;width:44px;height:44px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Correção da faixa de últimas notícias */
+.breaking{position:relative;isolation:isolate}.breaking>b{position:relative;z-index:5;flex:0 0 auto;min-width:138px;justify-content:center;padding:0 24px;box-shadow:12px 0 18px var(--cream)}.breaking>div{position:relative;z-index:1;padding-left:8px}@media(max-width:540px){.breaking>b{min-width:104px;padding:0 14px;box-shadow:8px 0 14px var(--cream)}}
