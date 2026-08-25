@@ -2,7 +2,7 @@ const CONTENT_HUB_API = "https://correio-content-hub.onrender.com/api/v1/sites/b
 
 function fillCard(card, article, type = "story") {
   if (!card || !article) return;
-  card.href = article.source_url || "#";
+  card.href = `materia.html?id=${article.id}`;
   card.target = "_blank";
   card.rel = "noopener";
   const image = card.querySelector("img");
@@ -17,7 +17,7 @@ function fillCard(card, article, type = "story") {
 
 async function loadPublishedArticles() {
   try {
-    const response = await fetch(CONTENT_HUB_API, { headers: { Accept: "application/json" } });
+    const response = await fetch(`${CONTENT_HUB_API}&_=${Date.now()}`, { cache: "no-store", headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error(`Content Hub respondeu com HTTP ${response.status}`);
     const articles = await response.json();
     fillCard(document.querySelector(".hero"), articles.find((item) => item.placement === "hero"), "hero");
