@@ -29,7 +29,26 @@ async function loadPublishedArticles() {
   }
 }
 
+function enhanceNavigation() {
+  const search = document.querySelector(".search");
+  if (search) {
+    search.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>';
+    search.addEventListener("click", () => location.href = "busca.html");
+  }
+  const menu = document.querySelector(".mobile-menu");
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape" && menu) menu.open = false; });
+  document.querySelectorAll("img").forEach((image) => { image.loading = "lazy"; image.decoding = "async"; });
+  const top = document.createElement("button");
+  top.className = "back-to-top";
+  top.setAttribute("aria-label", "Voltar ao topo");
+  top.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>';
+  top.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
+  document.body.append(top);
+  addEventListener("scroll", () => top.classList.toggle("visible", scrollY > 500), { passive: true });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  enhanceNavigation();
   loadPublishedArticles();
   const form = document.querySelector(".newsletter form");
   form?.addEventListener("submit", (event) => {
