@@ -19,7 +19,8 @@ async function articles(){
  try{
   const r=await fetch(`${API}&_=${Date.now()}`,{cache:"no-store",signal:controller.signal});
   if(!r.ok)throw new Error("HTTP "+r.status);
-  const data=await r.json();
+  const payload=await r.json();
+  const data=Array.isArray(payload)?payload:Array.isArray(payload.articles)?payload.articles:[];
   return data.length?data:fallback;
  }catch{return fallback}finally{clearTimeout(timeout)}
 }
@@ -40,4 +41,7 @@ function initUI(){
  document.querySelectorAll("img").forEach(img=>{img.loading="lazy";img.decoding="async"});
 }
 render(fallback);
-articles().then(data=>{if(JSON.stringify(data)!==JSON.stringify(fallback))render(data)});
+let currentData=fallback;
+const refreshArticles=()=>articles().then(data=>{currentData=data;if(JSON.stringify(data)!==JSON.stringify(fallback))render(data)});
+refreshArticles();
+addEventListener("focus",refreshArticles);
