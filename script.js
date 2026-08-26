@@ -1,4 +1,4 @@
-const CONTENT_HUB_API = "https://correio-content-hub.onrender.com/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br";
+const CONTENT_HUB_API = "/api/articles";
 
 function fillCard(card, article, type = "story") {
   if (!card || !article) return;
