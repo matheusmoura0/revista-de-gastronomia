@@ -1,7 +1,7 @@
 module.exports = async function handler(request, response) {
-  response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-  response.setHeader("CDN-Cache-Control", "no-store");
-  response.setHeader("Vercel-CDN-Cache-Control", "no-store");
+  response.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+  response.setHeader("CDN-Cache-Control", "public, s-maxage=30, stale-while-revalidate=86400, stale-if-error=86400");
+  response.setHeader("Vercel-CDN-Cache-Control", "public, s-maxage=30, stale-while-revalidate=86400, stale-if-error=86400");
 
   try {
     const upstream = await fetch(
