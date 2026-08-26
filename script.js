@@ -19,10 +19,14 @@ async function loadPublishedArticles() {
   try {
     const response = await fetch(`${CONTENT_HUB_API}&_=${Date.now()}`, { cache: "no-store", headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error(`Content Hub respondeu com HTTP ${response.status}`);
-    const articles = await response.json();
-    fillCard(document.querySelector(".hero"), articles.find((item) => item.placement === "hero"), "hero");
-    fillCard(document.querySelector(".side-lead > a"), articles.find((item) => item.placement === "editor_pick"), "editor");
-    const latest = articles.filter((item) => item.placement === "latest").slice(0, 6);
+    const payload = await response.json();
+    const articles = Array.isArray(payload) ? payload : Array.isArray(payload.articles) ? payload.articles : [];
+    if (!articles.length) throw new Error("Nenhuma matéria publicada");
+    const hero = articles.find((item) => item.placement === "hero") || articles[0];
+    const editor = articles.find((item) => item.placement === "editor_pick" && item.id !== hero.id) || articles.find((item) => item.id !== hero.id);
+    fillCard(document.querySelector(".hero"), hero, "hero");
+    fillCard(document.querySelector(".side-lead > a"), editor, "editor");
+    const latest = articles.filter((item) => item.id !== hero.id && item.id !== editor?.id).slice(0, 6);
     document.querySelectorAll(".story").forEach((card, index) => fillCard(card, latest[index]));
   } catch (error) {
     console.warn("A capa continuará exibindo o conteúdo editorial de reserva.", error);
@@ -65,6 +69,7 @@ function enhanceNavigation() {
 document.addEventListener("DOMContentLoaded", () => {
   enhanceNavigation();
   loadPublishedArticles();
+  addEventListener("focus", loadPublishedArticles);
   const form = document.querySelector(".newsletter form");
   form?.addEventListener("submit", (event) => {
     event.preventDefault();
