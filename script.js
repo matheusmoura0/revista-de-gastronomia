@@ -17,7 +17,7 @@ function fillCard(card, article, type = "story") {
 
 async function loadPublishedArticles() {
   try {
-    const response = await fetch(`${CONTENT_HUB_API}?_=${Date.now()}`, { cache: "no-store", headers: { Accept: "application/json" } });
+    const response = await fetch(CONTENT_HUB_API, { cache: "no-store", headers: { Accept: "application/json" } });
     if (!response.ok) throw new Error(`Content Hub respondeu com HTTP ${response.status}`);
     const payload = await response.json();
     const articles = Array.isArray(payload) ? payload : Array.isArray(payload.articles) ? payload.articles : [];
