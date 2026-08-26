@@ -17,7 +17,7 @@ async function articles(){
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),5000);
  try{
-  const r=await fetch(`${API}?_=${Date.now()}`,{cache:"no-store",signal:controller.signal});
+  const r=await fetch(API,{cache:"no-store",signal:controller.signal});
   if(!r.ok)throw new Error("HTTP "+r.status);
   const payload=await r.json();
   const data=Array.isArray(payload)?payload:Array.isArray(payload.articles)?payload.articles:[];
