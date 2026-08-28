@@ -44,14 +44,19 @@ async function loadPublishedArticles() {
 
     const bySlot = new Map(articles.filter(item => item.slot).map(item => [item.slot, item]));
     const used = new Set();
-    const take = (slot, fallback = true) => {
+    const fallbackPool = articles.filter(item => !item.slot);
+    const take = (slot) => {
       const exact = bySlot.get(slot);
       if (exact && !used.has(exact.id)) {
         used.add(exact.id);
         return exact;
       }
-      if (!fallback) return null;
-      const next = articles.find(item => !used.has(item.id));
+      const legacy = fallbackPool.find(item =>
+        !used.has(item.id) &&
+        ((slot === "hero" && item.placement === "hero") ||
+         (slot === "editor_pick" && item.placement === "editor_pick"))
+      );
+      const next = legacy || fallbackPool.find(item => !used.has(item.id));
       if (next) used.add(next.id);
       return next;
     };
