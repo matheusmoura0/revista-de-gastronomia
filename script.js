@@ -15,6 +15,25 @@ function fillCard(card, article, type = "story") {
   if (category && article.category) category.textContent = article.category.replaceAll("-", " ");
 }
 
+function fillTextLink(element, article) {
+  if (!element || !article) return;
+  element.textContent = article.title;
+  const openArticle = () => { location.href = `materia.html?id=${article.id}`; };
+  if (element.tagName === "A") {
+    element.href = `materia.html?id=${article.id}`;
+  } else {
+    element.tabIndex = 0;
+    element.setAttribute("role", "link");
+    element.addEventListener("click", openArticle);
+    element.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openArticle();
+      }
+    });
+  }
+}
+
 async function loadPublishedArticles() {
   try {
     const response = await fetch(CONTENT_HUB_API, { cache: "no-store", headers: { Accept: "application/json" } });
@@ -22,12 +41,33 @@ async function loadPublishedArticles() {
     const payload = await response.json();
     const articles = Array.isArray(payload) ? payload : Array.isArray(payload.articles) ? payload.articles : [];
     if (!articles.length) throw new Error("Nenhuma matéria publicada");
-    const hero = articles.find((item) => item.placement === "hero") || articles[0];
-    const editor = articles.find((item) => item.placement === "editor_pick" && item.id !== hero.id) || articles.find((item) => item.id !== hero.id);
-    fillCard(document.querySelector(".hero"), hero, "hero");
-    fillCard(document.querySelector(".side-lead > a"), editor, "editor");
-    const latest = articles.filter((item) => item.id !== hero.id && item.id !== editor?.id).slice(0, 6);
-    document.querySelectorAll(".story").forEach((card, index) => fillCard(card, latest[index]));
+
+    const bySlot = new Map(articles.filter(item => item.slot).map(item => [item.slot, item]));
+    const used = new Set();
+    const take = (slot, fallback = true) => {
+      const exact = bySlot.get(slot);
+      if (exact && !used.has(exact.id)) {
+        used.add(exact.id);
+        return exact;
+      }
+      if (!fallback) return null;
+      const next = articles.find(item => !used.has(item.id));
+      if (next) used.add(next.id);
+      return next;
+    };
+
+    fillCard(document.querySelector(".hero"), take("hero"), "hero");
+    fillCard(document.querySelector(".side-lead > a"), take("editor_pick"), "editor");
+
+    document.querySelectorAll(".story").forEach((card, index) => {
+      fillCard(card, take(`fresh_${index + 1}`));
+    });
+    document.querySelectorAll(".breaking div span").forEach((item, index) => {
+      fillTextLink(item, take(`breaking_${index + 1}`));
+    });
+    document.querySelectorAll(".popular li a").forEach((item, index) => {
+      fillTextLink(item, take(`popular_${index + 1}`));
+    });
   } catch (error) {
     console.warn("A capa continuará exibindo o conteúdo editorial de reserva.", error);
   }
