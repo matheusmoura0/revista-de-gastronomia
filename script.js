@@ -6,7 +6,7 @@ function fillCard(card, article, type = "story") {
   card.target = "_blank";
   card.rel = "noopener";
   const image = card.querySelector("img");
-  if (image && article.image_url) image.src = article.image_url;
+  if (image) { if (article.image_url) image.src = article.image_url; else image.remove(); }
   const title = card.querySelector(type === "hero" ? "h1" : type === "editor" ? "h2" : "h3");
   if (title) title.textContent = article.title;
   const description = card.querySelector("p");
