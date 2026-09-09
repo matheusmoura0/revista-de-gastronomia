@@ -1,4 +1,4 @@
-const API = "/api/articles";
+const API = "https://hub.cm.com.br/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br";
 const category = new URLSearchParams(location.search).get("categoria") || "novidades";
 const app = document.getElementById("portal-app");
 
