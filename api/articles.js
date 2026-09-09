@@ -5,7 +5,7 @@ module.exports = async function handler(request, response) {
 
   try {
     const upstream = await fetch(
-      "https://correio-content-hub.onrender.com/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br",
+      "https://hub.cm.com.br/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br",
       { headers: { Accept: "application/json" }, cache: "no-store" }
     );
 
