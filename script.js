@@ -1,4 +1,4 @@
-const CONTENT_HUB_API = "/api/articles";
+const CONTENT_HUB_API = "https://hub.cm.com.br/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br";
 
 function fillCard(card, article, type = "story") {
   if (!card || !article) return;
