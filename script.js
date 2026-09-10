@@ -1,4 +1,5 @@
 const CONTENT_HUB_API = "https://hub.cm.com.br/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br";
+const freshHubUrl = () => `${CONTENT_HUB_API}&refresh=${Date.now()}`;
 
 function fillCard(card, article, type = "story") {
   if (!card || !article) return;
@@ -42,15 +43,22 @@ function fillTextLink(element, article) {
   }
 }
 
+let refreshInFlight = false;
+let refreshToken = 0;
 async function loadPublishedArticles() {
+  if (refreshInFlight) return;
+  refreshInFlight = true;
+  const token = ++refreshToken;
   try {
-    const response = await fetch(CONTENT_HUB_API, { cache: "no-store", headers: { Accept: "application/json" } });
+    const response = await fetch(freshHubUrl(), { cache: "no-store", headers: { Accept: "application/json", "Cache-Control": "no-cache" }, signal: AbortSignal.timeout(9000) });
     if (!response.ok) throw new Error(`Content Hub respondeu com HTTP ${response.status}`);
     const payload = await response.json();
     const articles = Array.isArray(payload) ? payload : Array.isArray(payload.articles) ? payload.articles : [];
     if (!articles.length) throw new Error("Nenhuma matéria publicada");
 
-    const bySlot = new Map(articles.filter(item => item.slot).map(item => [item.slot, item]));
+    if (token !== refreshToken) return;
+    const bySlot = new Map();
+    articles.filter(item => item.slot).forEach(item => { if (!bySlot.has(item.slot)) bySlot.set(item.slot, item); });
     const used = new Set();
     const fallbackPool = articles.filter(item => !item.slot);
     const take = (slot) => {
@@ -83,6 +91,8 @@ async function loadPublishedArticles() {
     });
   } catch (error) {
     console.warn("A capa continuará exibindo o conteúdo editorial de reserva.", error);
+  } finally {
+    refreshInFlight = false;
   }
 }
 
@@ -123,6 +133,8 @@ document.addEventListener("DOMContentLoaded", () => {
   enhanceNavigation();
   loadPublishedArticles();
   addEventListener("focus", loadPublishedArticles);
+  setInterval(() => { if (document.visibilityState === "visible") loadPublishedArticles(); }, 60000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") loadPublishedArticles(); });
   const form = document.querySelector(".newsletter form");
   form?.addEventListener("submit", (event) => {
     event.preventDefault();
