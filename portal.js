@@ -1,4 +1,5 @@
 const API="https://hub.cm.com.br/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br";
+const freshApi=()=>API+"&refresh="+Date.now();
 const fallback=[
 {id:101,title:"O ingrediente de R$ 3 que transforma qualquer molho de tomate",description:"Um detalhe simples muda aroma, textura e sabor.",category:"receitas",author:"Redação",image_url:"https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=85",content:"Cozinhar bem não depende de ingredientes caros. O segredo está no tempo, na temperatura e na maneira de combinar sabores.\nComece com uma boa base aromática e deixe o tomate cozinhar lentamente. Finalize provando e corrigindo a acidez aos poucos."},
 {id:102,title:"A pequena casa de massas que virou a reserva mais disputada da cidade",description:"Massa fresca, salão intimista e uma fila que cresce a cada semana.",category:"restaurantes",author:"Redação",image_url:"https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1200&q=85",content:"O restaurante começou pequeno, com poucas mesas e um cardápio escrito à mão. A atenção aos ingredientes rapidamente conquistou o bairro.\nHoje, a cozinha mantém o ritmo artesanal e transforma receitas tradicionais em pratos cheios de personalidade."},
@@ -17,7 +18,7 @@ async function articles(){
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),5000);
  try{
-  const r=await fetch(API,{cache:"no-store",signal:controller.signal});
+  const r=await fetch(freshApi(),{cache:"no-store",headers:{"Cache-Control":"no-cache"},signal:controller.signal});
   if(!r.ok)throw new Error("HTTP "+r.status);
   const payload=await r.json();
   const data=Array.isArray(payload)?payload:Array.isArray(payload.articles)?payload.articles:[];
@@ -45,3 +46,5 @@ let currentData=fallback;
 const refreshArticles=()=>articles().then(data=>{currentData=data;if(JSON.stringify(data)!==JSON.stringify(fallback))render(data)});
 refreshArticles();
 addEventListener("focus",refreshArticles);
+setInterval(refreshArticles,60000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refreshArticles()});
