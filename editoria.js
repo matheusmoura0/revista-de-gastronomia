@@ -1,4 +1,5 @@
 const API = "https://hub.cm.com.br/api/v1/sites/by-domain/articles?domain=revistadegastronomia.com.br";
+const freshApi = () => `${API}&refresh=${Date.now()}`;
 const category = new URLSearchParams(location.search).get("categoria") || "novidades";
 const app = document.getElementById("portal-app");
 
@@ -72,7 +73,8 @@ function articleLink(article, className, heading = "h2") {
 
 function renderArticles(all) {
   const candidates = all.filter(item => item.category === category);
-  const bySlot = new Map(candidates.filter(item => item.slot?.startsWith("section_")).map(item => [item.slot, item]));
+  const bySlot = new Map();
+  candidates.filter(item => item.slot?.startsWith("section_")).forEach(item => { if (!bySlot.has(item.slot)) bySlot.set(item.slot, item); });
   const used = new Set();
   const fallback = candidates.filter(item => !item.slot?.startsWith("section_"));
   const take = slot => {
@@ -119,7 +121,7 @@ function renderArticles(all) {
 async function load() {
   shell();
   try {
-    const response = await fetch(API, { cache: "no-store", headers: { Accept: "application/json" } });
+    const response = await fetch(freshApi(), { cache: "no-store", headers: { Accept: "application/json", "Cache-Control": "no-cache" }, signal: AbortSignal.timeout(9000) });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     renderArticles(Array.isArray(payload) ? payload : payload.articles || []);
@@ -129,3 +131,5 @@ async function load() {
 }
 
 load();
+setInterval(() => { if (document.visibilityState === "visible") load(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") load(); });
